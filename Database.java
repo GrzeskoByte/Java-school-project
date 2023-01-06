@@ -13,6 +13,7 @@ import java.awt.*;
 public class Database{
     public static void main(String[] args) {
         DatabaseManagement base = new DatabaseManagement("baza1");  
+        DatabaseManagement base2 = new DatabaseManagement("baza2");  
         GUI menu = new GUI(base);
     
     }
@@ -51,6 +52,7 @@ class GUI {
                {
                 JButton button = new JButton(filename);
                 button.addActionListener(e->{
+                    base.switchDatabase(filename);
                     String data[] = base.collectionsName;
 
                     for(String el : data){   
@@ -126,13 +128,15 @@ class DatabaseManagement {
     DatabaseManagement(String container){
         this.createContainer(container);
         this.containerName = container;
-       
-        
     }
 
     DatabaseManagement(){
         this.createContainer(this.containerName);
        
+    }
+
+    void switchDatabase(String newContainerName){
+        this.containerName = newContainerName;
     }
 
     private void createContainer(String containerName){
