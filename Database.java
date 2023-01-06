@@ -21,14 +21,17 @@ public class Database{
 
 class GUI {
     private JFrame frame = new JFrame();
+
     private JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
     private JPanel databasesListPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
     private JPanel mainView =new JPanel(new FlowLayout(FlowLayout.CENTER));
     private JPanel subView = new JPanel(new FlowLayout(FlowLayout.CENTER));
+
     private JTextArea textArea = new JTextArea();
 
     private JTextField collectionNameField = new JTextField();
     private JTextField recordField = new JTextField();
+    private JTextField newDatabaseField = new JTextField();
 
     
     private JLabel collectionLabel = new JLabel("Nazwa kolekcji");
@@ -37,6 +40,8 @@ class GUI {
     private JButton clear = new JButton("reset");
     private JButton addToCollection = new JButton("---");
     private JButton confrimDataSend = new JButton("Zatwierdź");
+    private JButton createDatabaseBtn = new JButton("Nowa baza");
+    private JButton confrimCreateDatabaseBtn = new JButton("Stwórz nową baze danych");
 
     private DatabaseManagement base;
 
@@ -92,10 +97,31 @@ class GUI {
                     mainView.revalidate();
                     mainView.repaint();
                 });
+                
                 databasesListPanel.add(button);
             }
         }
         
+        createDatabaseBtn.addActionListener(l->{
+            mainView.removeAll();
+            mainView.add(newDatabaseField);
+            mainView.add(confrimCreateDatabaseBtn);
+
+            newDatabaseField.setColumns(20);
+
+            confrimCreateDatabaseBtn.addActionListener(k->{
+                new DatabaseManagement(newDatabaseField.getText());
+
+                frame.revalidate();
+                frame.repaint();
+            });
+
+            frame.revalidate();
+            frame.repaint();
+        });
+
+        databasesListPanel.add(createDatabaseBtn);
+
         clear.addActionListener(e->{
             textArea.setText("");
             addToCollection.setText("---");
