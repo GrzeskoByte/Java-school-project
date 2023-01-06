@@ -26,17 +26,20 @@ class GUI {
     private JPanel subView = new JPanel(new FlowLayout(FlowLayout.CENTER));
     private JTextArea textArea = new JTextArea();
 
+    private JButton clearTextArea = new JButton("reset");
+    private JButton addToCollection = new JButton("---");
+
     private DatabaseManagement base;
 
     GUI(DatabaseManagement database){
         base = database;
 
-        frame.setSize(700, 700);
+        frame.setSize(500, 500);
         frame.setTitle("Symulacja bazy danych: Drużyny ligi angielskiej");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
       
         JButton clearTextArea = new JButton("wyczyść");
-        JButton addToCollection = new JButton("dodaj");
+        JButton addToCollection = new JButton("---");
 
         JLabel listLabel  = new JLabel();
         listLabel.setText("Lista baz danych: ");
@@ -66,6 +69,16 @@ class GUI {
                         mainView.add(btn);
                     }
 
+                    addToCollection.setText("dodaj rekord");
+                    
+                    addToCollection.addActionListener(n->{
+                        textArea.setText("");
+                        mainView.removeAll();
+
+                        frame.revalidate();
+                        frame.repaint();
+                    });
+
                     mainView.revalidate();
                     mainView.repaint();
                 });
@@ -75,6 +88,7 @@ class GUI {
         
         clearTextArea.addActionListener(e->{
             textArea.setText("");
+            addToCollection.setText("---");
             mainView.removeAll();
             frame.revalidate();
             frame.repaint();
