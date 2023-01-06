@@ -1,6 +1,6 @@
-### Database simulation [football english leauge]
+## Database simulation [football english leauge]
 
-## Assumptions
+### Assumptions
 - data have to be saved in txt file (custom name or default name)
 - data is stored in directory with specific or default name
 - in every directory have to be few txt files which represents data collections
@@ -12,11 +12,11 @@
 - all databases are created in root path
 
 
-## Add new record to database
+### Add new record to database
 - choose database which you would like to add new record
 - fill form, remember you have to pass properly collection name
 - confrim data send (data will be saved in specified collection)
 
-## warings
+### warings
 - for some reasons add database from panel does not reload frames, so user have
 to reopen app to edit created database
