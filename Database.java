@@ -3,14 +3,17 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Set;
+import java.io.BufferedReader;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class Database{
     public static void main(String[] args) {
-        GUI menu = new GUI();
         DatabaseManagement base = new DatabaseManagement("baza1");  
+        GUI menu = new GUI(base);
     
     }
 }
@@ -19,14 +22,21 @@ class GUI {
     private JFrame frame = new JFrame();
     private JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
     private JPanel databasesListPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-    
-    GUI(){
-        frame.setSize(400, 400);
+    private JPanel mainView =new JPanel(new FlowLayout(FlowLayout.CENTER));
+    private JPanel subView = new JPanel(new FlowLayout(FlowLayout.CENTER));
+    private JTextArea textArea = new JTextArea();
+
+    private DatabaseManagement base;
+
+    GUI(DatabaseManagement database){
+        base = database;
+
+        frame.setSize(700, 700);
         frame.setTitle("Symulacja bazy danych: Drużyny ligi angielskiej");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
       
-        JButton prev = new JButton("---");
-        JButton next = new JButton("---");
+        JButton clearTextArea = new JButton("wyczyść");
+        JButton addToCollection = new JButton("dodaj");
 
         JLabel listLabel  = new JLabel();
         listLabel.setText("Lista baz danych: ");
@@ -37,57 +47,78 @@ class GUI {
             if(!filename.equals(".git") && !filename.equals("README.md") && !filename.equals("Database.java") )
                {
                 JButton button = new JButton(filename);
-                button.addActionListener(e->showDatabase());
+                button.addActionListener(e->{
+                    String data[] = base.collectionsName;
+
+                    for(String el : data){   
+                        JButton btn = new JButton(el);
+                        btn.addActionListener(n->{
+                            ArrayList<String> records = base.getCollectionRecords(el);
+                            textArea.setText("");
+                            textArea.append(el + ": \n");
+                            for(String record : records){
+                                textArea.append("   "+ record + "\n");
+                            }
+
+                            textArea.revalidate();
+                            textArea.repaint();
+                        });
+                        mainView.add(btn);
+                    }
+
+                    mainView.revalidate();
+                    mainView.repaint();
+                });
                 databasesListPanel.add(button);
             }
         }
         
+        clearTextArea.addActionListener(e->{
+            textArea.setText("");
+            mainView.removeAll();
+            frame.revalidate();
+            frame.repaint();
+        });
 
-        buttonPanel.add(prev);
-        buttonPanel.add(next);
-    
-        // Stwórz okienko do wyświetlania danych
-        JTextArea textArea = new JTextArea();
-        JScrollPane scrollPane = new JScrollPane(textArea);
-    
-        textArea.setText("Wybierz bazę danych z listy");
-        // Dodaj elementy do okna
-        frame.add(scrollPane, BorderLayout.CENTER);
+        buttonPanel.add(clearTextArea);
+        buttonPanel.add(addToCollection);
+     
+        subView.add(textArea);
+     
+        frame.add(subView, BorderLayout.WEST);
+        frame.add(mainView, BorderLayout.CENTER);
         frame.add(buttonPanel, BorderLayout.SOUTH);
         frame.add(databasesListPanel, BorderLayout.NORTH);
-    
-        // Wyświetl okno
+       
+      
         frame.setVisible(true);
-        this.getDatabasesName();
+      
     }
 
-    void showDatabase(){
-        System.out.println("hello");
-    }
+   
+    
 
     String[] getDatabasesName(){
         File folder = new File(System.getProperty("user.dir"));
         String[] listOfFiles = folder.list();
-
-        
         return listOfFiles;
     }
 }
 
 class DatabaseManagement {
     private String containerName = "baza1";
-   
+    public String collectionsName[] = {"teams","players","trainers","matches"};
     
     DatabaseManagement(String container){
         this.createContainer(container);
         this.containerName = container;
-        this.initValues();
+       
         
     }
 
     DatabaseManagement(){
         this.createContainer(this.containerName);
-        this.initValues();
+       
     }
 
     private void createContainer(String containerName){
@@ -96,10 +127,9 @@ class DatabaseManagement {
                 Boolean result = container.mkdir();
                 if(result){
                     System.out.println("Directory created: " + container.getName());
-                    this.createCollectionInDirectory(container.getName(),"team");
-                    this.createCollectionInDirectory(container.getName(),"players");
-                    this.createCollectionInDirectory(container.getName(),"trainers");
-                    this.createCollectionInDirectory(container.getName(),"matches");
+                    for(String filename : this.collectionsName)
+                        this.createCollectionInDirectory(container.getName(), filename);
+                    
                 }else{
                     System.out.println("Error occurs");
                 }
@@ -108,32 +138,50 @@ class DatabaseManagement {
 
     }
 
+    
     void createCollectionInDirectory(String directoryName, String collectionName){
         try {
             File base = new File(directoryName + "/" + collectionName);
             if (base.createNewFile()) {
-              System.out.println("File created: " + collectionName);
+                System.out.println("File created: " + collectionName);
             } else {
-              System.out.println("File already exists.");
+                System.out.println("File already exists.");
             }
-          } catch (IOException e) {
+        } catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+    }
+    
+    
+
+    ArrayList<String> getCollectionRecords(String collectionName){
+        ArrayList<String> records = new ArrayList<>();
+        String line;
+        try (BufferedReader reader = new BufferedReader(new FileReader(this.containerName+"/"+collectionName))) {
+            while ((line = reader.readLine()) != null) {
+                records.add(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+      return records;
+    }
+   
+    void writeToFile(String filename, String content){
+        try{
+            FileWriter writer = new FileWriter(this.containerName + "/" + filename,true);
+            writer.write(content);
+            writer.close();
+            System.out.println("Successfully wrote to the file.");
+        }catch (IOException e) {
             System.out.println("An error occurred.");
             e.printStackTrace();
           }
     }
 
-
-    // void writeToFile(String content){
-    //     try{
-    //         FileWriter writer = new FileWriter(this.filename);
-    //         writer.write(content);
-    //         writer.close();
-    //         System.out.println("Successfully wrote to the file.");
-    //     }catch (IOException e) {
-    //         System.out.println("An error occurred.");
-    //         e.printStackTrace();
-    //       }
-    // }
+   
 
     // void readFile(){
     //     try{
@@ -148,9 +196,7 @@ class DatabaseManagement {
     //       }
     // }
   
-    private void initValues(){
-
-    }
+    
 }
 
 
