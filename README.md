@@ -9,6 +9,7 @@
 - user can add new databse with automated generated collections
 - database statement is equal to directory
 - collection statement is equal to .txt file with records
+- all databases are created in root path
 
 
 ## Add new record to database
