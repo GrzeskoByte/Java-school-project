@@ -27,8 +27,16 @@ class GUI {
     private JPanel subView = new JPanel(new FlowLayout(FlowLayout.CENTER));
     private JTextArea textArea = new JTextArea();
 
-    private JButton clearTextArea = new JButton("reset");
+    private JTextField collectionNameField = new JTextField();
+    private JTextField recordField = new JTextField();
+
+    
+    private JLabel collectionLabel = new JLabel("Nazwa kolekcji");
+    private JLabel recordLabel = new JLabel("Rekord");
+
+    private JButton clear = new JButton("reset");
     private JButton addToCollection = new JButton("---");
+    private JButton confrimDataSend = new JButton("Zatwierdź");
 
     private DatabaseManagement base;
 
@@ -39,7 +47,7 @@ class GUI {
         frame.setTitle("Symulacja bazy danych: Drużyny ligi angielskiej");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
       
-        JButton clearTextArea = new JButton("wyczyść");
+        JButton clear = new JButton("wyczyść");
         JButton addToCollection = new JButton("---");
 
         JLabel listLabel  = new JLabel();
@@ -47,11 +55,15 @@ class GUI {
 
         databasesListPanel.add(listLabel);
 
+      
         for(String filename : getDatabasesName()){
             if(!filename.equals(".git") && !filename.equals("README.md") && !filename.equals("Database.java") )
                {
                 JButton button = new JButton(filename);
+                
+
                 button.addActionListener(e->{
+                    mainView.removeAll();
                     base.switchDatabase(filename);
                     String data[] = base.collectionsName;
 
@@ -74,11 +86,7 @@ class GUI {
                     addToCollection.setText("dodaj rekord");
                     
                     addToCollection.addActionListener(n->{
-                        textArea.setText("");
-                        mainView.removeAll();
-
-                        frame.revalidate();
-                        frame.repaint();
+                        this.addToCollectionManageElements();
                     });
 
                     mainView.revalidate();
@@ -88,15 +96,17 @@ class GUI {
             }
         }
         
-        clearTextArea.addActionListener(e->{
+        clear.addActionListener(e->{
             textArea.setText("");
             addToCollection.setText("---");
             mainView.removeAll();
+
             frame.revalidate();
             frame.repaint();
         });
 
-        buttonPanel.add(clearTextArea);
+
+        buttonPanel.add(clear);
         buttonPanel.add(addToCollection);
      
         subView.add(textArea);
@@ -110,9 +120,39 @@ class GUI {
         frame.setVisible(true);
       
     }
-
-   
     
+    void addToCollectionManageElements(){
+        textArea.setText("");
+        mainView.removeAll();
+
+        mainView.add(collectionLabel);
+        mainView.add(collectionNameField);
+
+        mainView.add(recordField);
+        mainView.add(recordLabel);
+
+        collectionNameField.setColumns(20);
+        recordField.setColumns(20);
+        
+        mainView.add(confrimDataSend);
+
+
+        confrimDataSend.addActionListener(v->{
+            String recordToAdd = recordField.getText();
+            String collectionName = collectionNameField.getText();
+            
+            base.writeToFile(collectionName,recordToAdd);
+            System.out.println("send");
+            mainView.removeAll();
+
+            mainView.revalidate();
+            mainView.repaint();
+         });
+
+    
+        frame.revalidate();
+        frame.repaint();
+    }
 
     String[] getDatabasesName(){
         File folder = new File(System.getProperty("user.dir"));
@@ -187,10 +227,10 @@ class DatabaseManagement {
       return records;
     }
    
-    void writeToFile(String filename, String content){
+    void writeToFile(String collectionName, String content){
         try{
-            FileWriter writer = new FileWriter(this.containerName + "/" + filename,true);
-            writer.write(content);
+            FileWriter writer = new FileWriter(this.containerName + "/" + collectionName,true);
+            writer.write("\n"+"  "+content);
             writer.close();
             System.out.println("Successfully wrote to the file.");
         }catch (IOException e) {
@@ -198,22 +238,6 @@ class DatabaseManagement {
             e.printStackTrace();
           }
     }
-
-   
-
-    // void readFile(){
-    //     try{
-    //         int i;
-    //         FileReader reader = new FileReader(this.filename);
-    //         while ((i = reader.read()) != -1)
-    //             System.out.print((char)i);
-    //         reader.close();
-    //     }catch (IOException e) {
-    //         System.out.println("An error occurred.");
-    //         e.printStackTrace();
-    //       }
-    // }
-  
     
 }
 
