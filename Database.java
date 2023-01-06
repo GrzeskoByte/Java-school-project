@@ -39,6 +39,8 @@ class GUI {
 
     private JButton clear = new JButton("reset");
     private JButton addToCollection = new JButton("---");
+    private JButton deleteRecordBtn = new JButton("---");
+    
     private JButton confrimDataSend = new JButton("Zatwierdź");
     private JButton createDatabaseBtn = new JButton("Nowa baza");
     private JButton confrimCreateDatabaseBtn = new JButton("Stwórz nową baze danych");
@@ -52,8 +54,9 @@ class GUI {
         frame.setTitle("Symulacja bazy danych: Drużyny ligi angielskiej");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
       
-        JButton clear = new JButton("wyczyść");
-        JButton addToCollection = new JButton("---");
+        JButton clearBtn = new JButton("wyczyść");
+        JButton addToCollectionBtn = new JButton("---");
+        JButton deleteRecordBtn = new JButton("---");
 
         JLabel listLabel  = new JLabel();
         listLabel.setText("Lista baz danych: ");
@@ -88,11 +91,18 @@ class GUI {
                         mainView.add(btn);
                     }
 
-                    addToCollection.setText("dodaj rekord");
-                    
-                    addToCollection.addActionListener(n->{
-                        this.addToCollectionManageElements();
+                    addToCollectionBtn.setText("dodaj rekord");
+                    deleteRecordBtn.setText("usuń rekord");
+
+                    addToCollectionBtn.addActionListener(n->{
+                        this.addToCollection();
                     });
+                    
+                    deleteRecordBtn.addActionListener(n->{
+                        this.deleteFromCollection();
+                    });
+
+
 
                     mainView.revalidate();
                     mainView.repaint();
@@ -122,9 +132,10 @@ class GUI {
 
         databasesListPanel.add(createDatabaseBtn);
 
-        clear.addActionListener(e->{
+        clearBtn.addActionListener(e->{
             textArea.setText("");
-            addToCollection.setText("---");
+            addToCollectionBtn.setText("---");
+            deleteRecordBtn.setText("---");
             mainView.removeAll();
 
             frame.revalidate();
@@ -132,9 +143,10 @@ class GUI {
         });
 
 
-        buttonPanel.add(clear);
-        buttonPanel.add(addToCollection);
-     
+        buttonPanel.add(clearBtn);
+        buttonPanel.add(addToCollectionBtn);
+        buttonPanel.add(deleteRecordBtn);
+
         subView.add(textArea);
      
         frame.add(subView, BorderLayout.WEST);
@@ -147,7 +159,36 @@ class GUI {
       
     }
     
-    void addToCollectionManageElements(){
+    void deleteFromCollection(){
+        textArea.setText("");
+        mainView.removeAll();
+       
+        mainView.add(collectionLabel);
+        mainView.add(collectionNameField);
+
+        mainView.add(recordField);
+        mainView.add(recordLabel);
+
+        collectionNameField.setColumns(20);
+        recordField.setColumns(20);
+
+        mainView.add(confrimDataSend);
+
+        confrimDataSend.addActionListener(e->{
+            ArrayList<String> newData = new ArrayList<>();
+            
+            for(String record :base.getCollectionRecords(collectionNameField.getText())){
+                if(!record.equals(recordField.getText())) newData.add((record));
+            }
+            
+            base.overRideCollection(collectionNameField.getText(),newData);
+        });
+
+        mainView.revalidate();
+        mainView.repaint();
+    }
+
+    void addToCollection(){
         textArea.setText("");
         mainView.removeAll();
 
@@ -222,7 +263,6 @@ class DatabaseManagement {
 
     }
 
-    
     void createCollectionInDirectory(String directoryName, String collectionName){
         try {
             File base = new File(directoryName + "/" + collectionName);
@@ -257,6 +297,19 @@ class DatabaseManagement {
         try{
             FileWriter writer = new FileWriter(this.containerName + "/" + collectionName,true);
             writer.write("\n"+"  "+content);
+            writer.close();
+            System.out.println("Successfully wrote to the file.");
+        }catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+          }
+    }
+
+    void overRideCollection(String collectionName, ArrayList<String> newCollection){
+        try{
+            FileWriter writer = new FileWriter(this.containerName + "/" + collectionName);
+            for(String record : newCollection)
+                     writer.write(record);
             writer.close();
             System.out.println("Successfully wrote to the file.");
         }catch (IOException e) {
