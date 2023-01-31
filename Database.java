@@ -159,34 +159,49 @@ class GUI {
       
     }
     
-    void deleteFromCollection(){
+    void deleteFromCollection() {
         textArea.setText("");
         mainView.removeAll();
-       
+      
         mainView.add(collectionLabel);
         mainView.add(collectionNameField);
-
-        mainView.add(recordField);
-        mainView.add(recordLabel);
-
+      
         collectionNameField.setColumns(20);
         recordField.setColumns(20);
-
-        mainView.add(confrimDataSend);
-
-        confrimDataSend.addActionListener(e->{
-            ArrayList<String> newData = new ArrayList<>();
-            
-            for(String record :base.getCollectionRecords(collectionNameField.getText())){
-                if(!record.equals(recordField.getText())) newData.add((record));
-            }
-            
-            base.overRideCollection(collectionNameField.getText(),newData);
+        JButton confirmDataSend = new JButton("zatwierdz");
+        mainView.add(confirmDataSend);
+      
+        confirmDataSend.addActionListener(e -> {
+          ArrayList<String> records = base.getCollectionRecords(collectionNameField.getText());
+          for (String record : records) {
+            JButton deleteBtn = new JButton("Usuń");
+            JLabel deleteLabel = new JLabel(record);
+      
+            deleteBtn.addActionListener(j -> {
+              ArrayList<String> newRecords = new ArrayList<>();
+              for (String line : records) {
+                if (!line.equals(record)) {
+                  newRecords.add(line);
+                }
+              }
+      
+              base.overRideCollection(collectionNameField.getText(), newRecords);
+              deleteFromCollection();
+            });
+      
+            mainView.add(deleteLabel);
+            mainView.add(deleteBtn);
+          }
+      
+          mainView.revalidate();
+          mainView.repaint();
         });
-
+      
         mainView.revalidate();
         mainView.repaint();
-    }
+      }
+      
+  
 
     void addToCollection(){
         textArea.setText("");
@@ -245,6 +260,8 @@ class DatabaseManagement {
     void switchDatabase(String newContainerName){
         this.containerName = newContainerName;
     }
+    
+    
 
     private void createContainer(String containerName){
             File container = new File(containerName);
@@ -265,9 +282,9 @@ class DatabaseManagement {
 
     void createCollectionInDirectory(String directoryName, String collectionName){
         try {
-            File base = new File(directoryName + "/" + collectionName);
+            File base = new File(directoryName + "/" + collectionName + ".dat");
             if (base.createNewFile()) {
-                System.out.println("File created: " + collectionName);
+                System.out.println("File created: " + collectionName + ".dat");
             } else {
                 System.out.println("File already exists.");
             }
@@ -282,7 +299,7 @@ class DatabaseManagement {
     ArrayList<String> getCollectionRecords(String collectionName){
         ArrayList<String> records = new ArrayList<>();
         String line;
-        try (BufferedReader reader = new BufferedReader(new FileReader(this.containerName+"/"+collectionName))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(this.containerName+"/"+collectionName+".dat"))) {
             while ((line = reader.readLine()) != null) {
                 records.add(line);
             }
@@ -295,7 +312,7 @@ class DatabaseManagement {
    
     void writeToFile(String collectionName, String content){
         try{
-            FileWriter writer = new FileWriter(this.containerName + "/" + collectionName,true);
+            FileWriter writer = new FileWriter(this.containerName + "/" + collectionName+".dat",true);
             writer.write("\n"+"  "+content);
             writer.close();
             System.out.println("Successfully wrote to the file.");
@@ -305,9 +322,10 @@ class DatabaseManagement {
           }
     }
 
+
     void overRideCollection(String collectionName, ArrayList<String> newCollection){
         try{
-            FileWriter writer = new FileWriter(this.containerName + "/" + collectionName);
+            FileWriter writer = new FileWriter(this.containerName + "/" + collectionName+".dat");
             for(String record : newCollection)
                      writer.write(record);
             writer.close();
