@@ -1,11 +1,17 @@
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Set;
 import java.io.BufferedReader;
+import java.util.HashSet;
 
 import javax.swing.*;
 import java.awt.*;
@@ -122,12 +128,10 @@ class GUI {
             confrimCreateDatabaseBtn.addActionListener(k->{
                 new DatabaseManagement(newDatabaseField.getText());
 
-                frame.revalidate();
-                frame.repaint();
+                this.refresch();
             });
 
-            frame.revalidate();
-            frame.repaint();
+            this.refresch();
         });
 
         databasesListPanel.add(createDatabaseBtn);
@@ -159,6 +163,20 @@ class GUI {
       
     }
     
+    public void  refresch(){
+        mainView.revalidate();
+        mainView.repaint();
+
+        databasesListPanel.revalidate();
+        databasesListPanel.repaint();
+
+        subView.revalidate();
+        subView.repaint();
+
+        buttonPanel.revalidate();
+        buttonPanel.repaint();
+    }
+
     void deleteFromCollection() {
         textArea.setText("");
         mainView.removeAll();
@@ -271,7 +289,6 @@ class DatabaseManagement {
                     System.out.println("Directory created: " + container.getName());
                     for(String filename : this.collectionsName)
                         this.createCollectionInDirectory(container.getName(), filename);
-                    
                 }else{
                     System.out.println("Error occurs");
                 }
@@ -293,8 +310,6 @@ class DatabaseManagement {
             e.printStackTrace();
         }
     }
-    
-    
 
     ArrayList<String> getCollectionRecords(String collectionName){
         ArrayList<String> records = new ArrayList<>();
@@ -307,12 +322,12 @@ class DatabaseManagement {
             e.printStackTrace();
         }
 
-      return records;
+      return Helpers.getUnique(records);
     }
    
     void writeToFile(String collectionName, String content){
         try{
-            FileWriter writer = new FileWriter(this.containerName + "/" + collectionName+".dat",true);
+            FileWriter writer = new FileWriter(this.containerName + "/" + collectionName+ ".dat",true);
             writer.write("\n"+"  "+content);
             writer.close();
             System.out.println("Successfully wrote to the file.");
@@ -321,7 +336,6 @@ class DatabaseManagement {
             e.printStackTrace();
           }
     }
-
 
     void overRideCollection(String collectionName, ArrayList<String> newCollection){
         try{
@@ -339,3 +353,46 @@ class DatabaseManagement {
 }
 
 
+class Helpers{
+    public static ArrayList<String> getUnique(ArrayList<String> list) {
+        Set<String> uniqueElements = new HashSet<>(list);
+        return new ArrayList<>(uniqueElements);
+    }
+
+
+    public static boolean isValidDatabaseName(String name) {
+        int length = name.length();
+        
+        // Check if length is less than 5
+        if (length < 5) {
+          System.out.println("Error: Name too short");
+          return false;
+        }
+        
+        // Check if extension is .dat
+        String extension = name.substring(length - 4);
+        if (!extension.equals(".dat")) {
+          System.out.println("Error: Invalid extension");
+          return false;
+        }
+        
+        // Check if first character is a letter
+        char firstChar = name.charAt(0);
+        if (!Character.isLetter(firstChar)) {
+          System.out.println("Error: First character must be a letter");
+          return false;
+        }
+        
+        // Check if the rest of the characters are letters or digits
+        for (int i = 1; i < length - 4; i++) {
+          char c = name.charAt(i);
+          if (!Character.isLetterOrDigit(c)) {
+            System.out.println("Error: Invalid character in name");
+            return false;
+          }
+        }
+        
+        return true;
+      }
+      
+}
