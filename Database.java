@@ -283,7 +283,7 @@ class DatabaseManagement {
 
     private void createContainer(String containerName){
             File container = new File(containerName);
-            if (!container.exists()) {
+            if (!container.exists() && Helpers.isValidDatabaseName(containerName)) {
                 Boolean result = container.mkdir();
                 if(result){
                     System.out.println("Directory created: " + container.getName());
