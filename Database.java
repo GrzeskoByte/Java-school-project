@@ -69,7 +69,7 @@ class GUI {
 
         databasesListPanel.add(listLabel);
 
-      
+
         for(String filename : getDatabasesName()){
             if(!filename.equals(".git") && !filename.equals("README.md") && !filename.equals("Database.java") )
                {
@@ -366,13 +366,6 @@ class Helpers{
         // Check if length is less than 5
         if (length < 5) {
           System.out.println("Error: Name too short");
-          return false;
-        }
-        
-        // Check if extension is .dat
-        String extension = name.substring(length - 4);
-        if (!extension.equals(".dat")) {
-          System.out.println("Error: Invalid extension");
           return false;
         }
         
